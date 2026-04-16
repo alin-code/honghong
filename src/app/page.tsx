@@ -1,30 +1,13 @@
-'use client';
+import { redirect } from 'next/navigation';
+import { GameApp } from '@/components/GameApp';
+import { getCurrentUser } from '@/lib/auth';
 
-import { GameProvider, useGame } from '@/context/GameContext';
-import { StartScreen } from '@/components/StartScreen';
-import { GameScreen } from '@/components/GameScreen';
-import { GameOverScreen } from '@/components/GameOverScreen';
+export default async function Home() {
+  const user = await getCurrentUser();
 
-function GameContent() {
-  const { gameState } = useGame();
-  const { step, gameOver } = gameState;
-
-  // 根据游戏状态显示不同界面
-  if (step === 0) {
-    return <StartScreen />;
+  if (!user) {
+    redirect('/login');
   }
 
-  if (gameOver) {
-    return <GameOverScreen />;
-  }
-
-  return <GameScreen />;
-}
-
-export default function Home() {
-  return (
-    <GameProvider>
-      <GameContent />
-    </GameProvider>
-  );
+  return <GameApp />;
 }

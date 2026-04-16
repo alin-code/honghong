@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useGame } from '@/context/GameContext';
 import { SCENARIOS, getVoicesByGender } from '@/types/game';
 import { StarParticles } from './StarParticles';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export function StartScreen() {
   const { gameState, setGender, setScenario, setVoiceType, startGame } = useGame();
@@ -23,7 +24,11 @@ export function StartScreen() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden">
       <StarParticles />
-      <Card className="w-full max-w-2xl shadow-2xl border-0 bg-white/90 backdrop-blur-sm relative z-10">
+      <div className="relative z-10 w-full max-w-2xl space-y-4">
+        <div className="flex justify-end">
+          <LogoutButton />
+        </div>
+        <Card className="w-full shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <Heart className="w-16 h-16 text-pink-500 animate-pulse heart-float" fill="#ec4899" />
@@ -149,7 +154,8 @@ export function StartScreen() {
             <p>好感度降到 -50 就失败啦</p>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

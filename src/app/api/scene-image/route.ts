@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireUser } from '@/lib/auth';
 
 const ARK_IMAGE_API_URL = 'https://ark.cn-beijing.volces.com/api/v3/images/generations';
 const ARK_IMAGE_MODEL = 'doubao-seedream-5-0-260128';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireUser();
     const body = await request.json();
     const { gender, scenario, voiceType } = body as {
       gender?: 'female' | 'male';
@@ -76,6 +78,10 @@ export async function POST(request: NextRequest) {
       prompt,
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     console.error('Error in /api/scene-image:', error);
     return NextResponse.json(
       { error: 'Failed to generate scene image' },

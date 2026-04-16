@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LLMClient, Config, HeaderUtils } from 'coze-coding-dev-sdk';
+import { requireUser } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
+    await requireUser();
     const body = await request.json();
     const { gender, scenario, messages, affection, step, isGameOver, won } = body;
 
@@ -135,6 +137,10 @@ ${won ? '对方成功把你哄好了，你需要说一句甜蜜的结束语，�
       options,
     });
   } catch (error) {
+    if (error instanceof Error && error.message === 'UNAUTHORIZED') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     console.error('Error in /api/chat:', error);
     
     // 降级方案：返回默认对话和选项
