@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createSession, createUser, findUserByEmail } from '@/lib/auth';
+import { createSession, createUser, findUserByEmail, verifyPassword } from '@/lib/auth';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,11 +19,38 @@ export async function POST(request: NextRequest) {
 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      return NextResponse.json({ error: '这个邮箱已经注册过了' }, { status: 409 });
+      if (!verifyPassword(password, existingUser.password_hash)) {
+        return NextResponse.json({ error: '该账号已存在，请输入正确密码继续登录' }, { status: 401 });
+      }
+
+      const user = {
+        id: existingUser.id,
+        email: existingUser.email,
+      };
+
+      await createSession(user);
+
+      try {
+        const userName = user.email.split('@')[0] || '宝宝';
+        await sendWelcomeEmail(user.email, userName);
+      } catch (emailError) {
+        console.error('Failed to send welcome email:', emailError);
+      }
+
+      return NextResponse.json({
+        user,
+      });
     }
 
     const user = await createUser(email, password);
     await createSession(user);
+
+    try {
+      const userName = user.email.split('@')[0] || '宝宝';
+      await sendWelcomeEmail(user.email, userName);
+    } catch (emailError) {
+      console.error('Failed to send welcome email:', emailError);
+    }
 
     return NextResponse.json({
       user,
